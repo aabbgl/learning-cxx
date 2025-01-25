@@ -1,5 +1,5 @@
 ﻿#include "../exercise.h"
-
+#include <cstring>
 // READ: 类模板 <https://zh.cppreference.com/w/cpp/language/class_template>
 
 template<class T>
@@ -8,11 +8,12 @@ struct Tensor4D {
     T *data;
 
     Tensor4D(unsigned int const shape_[4], T const *data_) {
-        unsigned int size = 1;
-        // TODO: 填入正确的 shape 并计算 size
-        data = new T[size];
-        std::memcpy(data, data_, size * sizeof(T));
+        std::memcpy(shape, shape_, 4 * sizeof(unsigned int)); // 复制形状
+        unsigned int size = shape[0] * shape[1] * shape[2] * shape[3]; // 计算总元素数
+        data = new T[size]; // 分配内存
+        std::memcpy(data, data_, size * sizeof(T)); // 复制数据
     }
+
     ~Tensor4D() {
         delete[] data;
     }
@@ -27,9 +28,44 @@ struct Tensor4D {
     // 例如，`this` 形状为 `[1, 2, 3, 4]`，`others` 形状为 `[1, 2, 1, 4]`，
     // 则 `this` 与 `others` 相加时，3 个形状为 `[1, 2, 1, 4]` 的子张量各自与 `others` 对应项相加。
     Tensor4D &operator+=(Tensor4D const &others) {
-        // TODO: 实现单向广播的加法
+        // 检查形状是否兼容
+        for (int i = 0; i < 4; ++i) {
+            if (others.shape[i] != 1 && others.shape[i] != shape[i]) {
+                throw std::runtime_error("Incompatible shapes for broadcasting");
+            }
+        }
+
+        // 遍历当前张量的所有元素
+        for (unsigned int i = 0; i < shape[0]; ++i) {
+            for (unsigned int j = 0; j < shape[1]; ++j) {
+                for (unsigned int k = 0; k < shape[2]; ++k) {
+                    for (unsigned int l = 0; l < shape[3]; ++l) {
+                        // 计算当前元素索引
+                        unsigned int idx = i * shape[1] * shape[2] * shape[3]
+                                        + j * shape[2] * shape[3]
+                                        + k * shape[3]
+                                        + l;
+
+                        // 计算广播后的索引
+                        unsigned int other_i = others.shape[0] == 1 ? 0 : i;
+                        unsigned int other_j = others.shape[1] == 1 ? 0 : j;
+                        unsigned int other_k = others.shape[2] == 1 ? 0 : k;
+                        unsigned int other_l = others.shape[3] == 1 ? 0 : l;
+
+                        unsigned int other_idx = other_i * others.shape[1] * others.shape[2] * others.shape[3]
+                                              + other_j * others.shape[2] * others.shape[3]
+                                              + other_k * others.shape[3]
+                                              + other_l;
+
+                        // 执行加法
+                        data[idx] += others.data[other_idx];
+                    }
+                }
+            }
+        }
         return *this;
     }
+
 };
 
 // ---- 不要修改以下代码 ----

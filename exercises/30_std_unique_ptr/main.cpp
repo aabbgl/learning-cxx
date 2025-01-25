@@ -52,9 +52,9 @@ int main(int argc, char **argv) {
     std::vector<const char *> answers[]{
         {"fd"},
         // TODO: 分析 problems[1] 中资源的生命周期，将记录填入 `std::vector`
-        // NOTICE: 此题结果依赖对象析构逻辑，平台相关，提交时以 CI 实际运行平台为准
-        {"", "", "", "", "", "", "", ""},
-        {"", "", "", "", "", "", "", ""},
+        // NOTICE: 此题结果依赖对象析构逻辑，平台相关，提交时以 CI 实际运行平台为准{"r", "f", "f", "r", "d"},  // 第二个问题: forward(drop(reset(forward(forward(reset(nullptr))))))
+        {"d", "ffr"},     // problems[1]
+        {"d", "d", "r"},  // problems[2]
     };
 
     // ---- 不要修改以下代码 ----
